@@ -24,6 +24,7 @@ router.get('/', isAuthenticated, async (req, res) => {
         last_name: req.session.user.last_name,
         email: req.session.user.email,
         age: req.session.user.age,
+        role: req.session.user.role,
       };
       
       // Renderizar la vista de productos y pasar los datos del usuario

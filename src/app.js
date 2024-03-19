@@ -11,6 +11,8 @@ import mongoose from 'mongoose'
 import Message from './dao/models/message.model.js'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
+import passport from 'passport'
+import initializePassport from './config/passport.config.js'
 
 const PORT = 8080; // puerto en el que va a escuchar el servidor
 
@@ -33,6 +35,11 @@ app.use(session({
   saveUninitialized: true
 }))
 
+// configuracion de passport
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
+
 // configuracion del motor de plantillas handlebars
 app.engine('handlebars', handlebars.engine());
 app.set('views', './src/views');
@@ -51,7 +58,15 @@ try {
     }); // middleware para agregar la instancia de socket.io a la request
     
     // Rutas
-    app.get('/', (req, res) => res.render('index')); // ruta raíz
+    app.get('/', (req, res) => {
+      if (req.session.user) {
+          // Si el usuario ya está autenticado, redireccionar a la vista de productos
+          res.render('index');
+      } else {
+          // Si el usuario no ha iniciado sesión, redireccionar a la vista de inicio de sesión
+          res.redirect('/login');
+      }
+    })
     
     app.use('/', viewsUserRouter); // registra el router de usuario en la ruta /
     app.use('/chat', chatRouter); // ruta para renderizar la vista de chat

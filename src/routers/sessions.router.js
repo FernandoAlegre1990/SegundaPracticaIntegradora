@@ -1,90 +1,45 @@
 import { Router } from "express";
-import bcrypt from "bcryptjs"; // Librería para encriptar contraseñas
-import User from '../dao/models/user.model.js';
-import { hasAdminCredentials } from "../public/js/authMiddleware.js";
+import passport from 'passport';
 
 const router = Router();
 
-router.post('/register', async (req, res) => {
-    try {
-        const { first_name, last_name, email, age, password } = req.body;
-
-        // Verificar si el usuario ya existe en la base de datos
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'El correo electrónico ya está en uso.' });
+// Ruta de registro
+router.post('/register', (req, res, next) => {
+    passport.authenticate('register', (err, user, info) => {
+        if (err || !user) {
+            return res.status(400).json({ error: 'Failed to register' });
         }
-
-        // Verificar si las credenciales son de administrador
-        const isAdminCredentials = hasAdminCredentials(email, password);
-
-        // Encriptar la contraseña utilizando bcryptjs
-        const saltRounds = 10; // Número de rondas de encriptación (mayor número, más seguro pero más lento)
-        const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-        // Crear un nuevo usuario con la contraseña encriptada y el rol correspondiente
-        const newUser = new User({
-            first_name,
-            last_name,
-            email,
-            age,
-            password: hashedPassword, // Guardamos la contraseña encriptada
-            role: isAdminCredentials ? 'admin' : 'usuario'
-        });
-        await newUser.save();
-
-        const user = {
-            _id: newUser._id,
-            first_name: newUser.first_name,
-            last_name: newUser.last_name,
-            email: newUser.email,
-            age: newUser.age,
-            role: newUser.role
-        }
-
-        // Almacenar toda la información del usuario en la sesión
-        req.session.user = user;
-
-        return res.status(201).json({ message: 'Usuario registrado exitosamente.' });
-    } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({ message: 'Error en el servidor.' });
-    }
+        req.session.user = user; // Almacena la información del usuario en la sesión
+        return res.status(200).json({ message: 'Registration successful' });
+    })(req, res, next);
 });
 
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
+// Ruta de fallo en el registro
+router.get('/failRegister', (req, res) => {
+    res.status(400).json({ error: 'Failed to register' });
+});
 
-        // Verificar si el usuario existe en la base de datos
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ message: 'Credenciales inválidas.' });
-        }
+// Ruta de inicio de sesión
+router.post('/login', passport.authenticate('login', { failureRedirect: '/api/sessions/failLogin' }), async (req, res) => {
+    req.session.user = req.user; // Almacena la información del usuario en la sesión
+    res.status(200).json({ message: 'Login successful' });
+}, (err, req, res, next) => {
+    console.error("Error en la autenticación:", err);
+    res.status(500).json({ error: 'Error de servidor' });
+});
 
-        // Verificar la contraseña utilizando bcryptjs
-        const passwordsMatch = bcrypt.compareSync(password, user.password);
-        if (!passwordsMatch) {
-            return res.status(401).json({ message: 'Credenciales inválidas.' });
-        }
+// Ruta de fallo en el inicio de sesión
+router.get('/failLogin', (req, res) => {
+    res.status(400).json({ error: 'Failed to login' });
+});
 
-        const userSession = {
-            _id: user._id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            age: user.age,
-            role: user.role
-        }
+// Ruta de inicio de sesión con GitHub
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-        // Almacenar toda la información del usuario en la sesión
-        req.session.user = userSession;
-
-        return res.status(200).json({ message: 'Inicio de sesión exitoso.' });
-    } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({ message: 'Error en el servidor.' });
-    }
+// Ruta de retorno de GitHub
+router.get('/githubcallback', passport.authenticate('github', { failureRedirect: '/login' }), async (req, res) => {
+    req.session.user = req.user; // Almacena la información del usuario en la sesión
+    res.redirect('/'); // Redirige al usuario a la página de inicio
 });
 
 export default router;
