@@ -1,8 +1,84 @@
 body {
-    box-sizing: border-box;
+    background-color: #2b7a78; /* Verde azulado para representar el océano */
+    font-family: 'Roboto', sans-serif; /* Fuente moderna y limpia */
+    color: #fff; /* Texto en color blanco para mayor contraste */
+
+}
+
+/* Estilos de encabezado */
+h1, h2, h3 {
+    font-weight: normal; /* Eliminar negrita para un aspecto más relajado */
+    color: #ff8c42; /* Naranja brillante para acentuar */
+}
+
+/* Estilos de botón */
+.btn {
+    background-color: #ff8c42; /* Naranja brillante para destacar */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #d95d00; /* Naranja más oscuro al pasar el ratón */
+}
+/* Estilos para la barra de navegación */
+nav {
+    background-color: #f2f2f2;
+    padding: 10px 0;
+}
+
+nav ul {
+    list-style-type: none;
     margin: 0;
     padding: 0;
-    background-color: black;
-    color: whitesmoke;
+    text-align: center;
 }
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+nav ul li a:hover {
+    color: #007bff;
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.card {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 10px;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #f0f0f0;
+    padding: 10px;
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.card-footer {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: center;
+}
+
+
 
